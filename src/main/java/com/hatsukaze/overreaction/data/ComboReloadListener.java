@@ -1,10 +1,9 @@
 // ComboReloadListener.java
-package com.hatsukaze.dontstopmoving.data;
+package com.hatsukaze.overreaction.data;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.hatsukaze.dontstopmoving.registry.ComboRegistry;
+import com.hatsukaze.overreaction.registry.ComboRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;

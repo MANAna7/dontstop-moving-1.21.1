@@ -1,8 +1,8 @@
-package com.hatsukaze.dontstopmoving.combat;
+package com.hatsukaze.overreaction.combat;
 
-import com.hatsukaze.dontstopmoving.attachment.CombatStateAttachment;
-import com.hatsukaze.dontstopmoving.data.AttackDefinition;
-import com.hatsukaze.dontstopmoving.registry.ModAttachments;
+import com.hatsukaze.overreaction.attachment.CombatStateAttachment;
+import com.hatsukaze.overreaction.data.AttackDefinition;
+import com.hatsukaze.overreaction.registry.ModAttachments;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -15,7 +15,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.List;
 
-import static com.hatsukaze.dontstopmoving.ExampleMod.MODID;
+import static com.hatsukaze.overreaction.ExampleMod.MODID;
 
 //EventBusSubscriber このクラスのstaticメソッドを自動でイベントバスに登録してくれる。ExampleModのコンストラクタでregisterする必要なし！
 @EventBusSubscriber(modid = MODID)

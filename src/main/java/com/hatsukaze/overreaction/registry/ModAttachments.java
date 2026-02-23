@@ -1,12 +1,12 @@
-package com.hatsukaze.dontstopmoving.registry;
+package com.hatsukaze.overreaction.registry;
 
-import com.hatsukaze.dontstopmoving.attachment.CombatStateAttachment;
+import com.hatsukaze.overreaction.attachment.CombatStateAttachment;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import java.util.function.Supplier;
 
-import static com.hatsukaze.dontstopmoving.ExampleMod.MODID;
+import static com.hatsukaze.overreaction.ExampleMod.MODID;
 
 /**
  *unityのFixedUpdateみたいな感じで、定期的に走る部分に作ったものを登録する処理

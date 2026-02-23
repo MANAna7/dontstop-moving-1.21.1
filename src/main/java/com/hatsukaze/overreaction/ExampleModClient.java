@@ -1,4 +1,4 @@
-package com.hatsukaze.dontstopmoving;
+package com.hatsukaze.overreaction;
 
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;

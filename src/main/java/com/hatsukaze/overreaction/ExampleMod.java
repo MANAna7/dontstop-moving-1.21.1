@@ -1,7 +1,7 @@
-package com.hatsukaze.dontstopmoving;
+package com.hatsukaze.overreaction;
 
-import com.hatsukaze.dontstopmoving.data.ComboReloadListener;
-import com.hatsukaze.dontstopmoving.registry.ModAttachments;
+import com.hatsukaze.overreaction.data.ComboReloadListener;
+import com.hatsukaze.overreaction.registry.ModAttachments;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import org.slf4j.Logger;
 
@@ -37,7 +37,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 @Mod(ExampleMod.MODID)
 public class ExampleMod {
     // Define mod id in a common place for everything to reference
-    public static final String MODID = "dontstopmoving";
+    public static final String MODID = "overreaction";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     // Create a Deferred Register to hold Blocks which will all be registered under the "examplemod" namespace

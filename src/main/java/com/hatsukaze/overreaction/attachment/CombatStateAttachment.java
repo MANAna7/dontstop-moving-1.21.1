@@ -1,10 +1,9 @@
-package com.hatsukaze.dontstopmoving.attachment;
+package com.hatsukaze.overreaction.attachment;
 
-import com.hatsukaze.dontstopmoving.data.AttackDefinition;
+import com.hatsukaze.overreaction.data.AttackDefinition;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
-import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.HashSet;
 import java.util.Set;

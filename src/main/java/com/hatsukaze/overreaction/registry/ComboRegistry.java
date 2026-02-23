@@ -1,7 +1,7 @@
 // ComboRegistry.java
-package com.hatsukaze.dontstopmoving.registry;
+package com.hatsukaze.overreaction.registry;
 
-import com.hatsukaze.dontstopmoving.data.ComboDefinition;
+import com.hatsukaze.overreaction.data.ComboDefinition;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

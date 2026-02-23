@@ -1,5 +1,5 @@
 // AttackDefinition.java
-package com.hatsukaze.dontstopmoving.data;
+package com.hatsukaze.overreaction.data;
 
 import com.google.gson.JsonObject;
 
