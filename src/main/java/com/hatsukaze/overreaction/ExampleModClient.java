@@ -1,18 +1,23 @@
 package com.hatsukaze.overreaction;
 
+import com.hatsukaze.overreaction.network.RequestAttackPacket;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationFactory;
 import com.zigythebird.playeranimcore.enums.PlayState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwordItem;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 // This class will not load on dedicated servers. Accessing client side code from here is safe.
 @Mod(value = ExampleMod.MODID, dist = Dist.CLIENT)
@@ -42,6 +47,21 @@ public class ExampleModClient {
                     )
             );
         });
+    }
+
+    //左クリック受け取り、フィルタリングして通す
+    @SubscribeEvent
+    public static void onLeftClick(InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!event.isAttack()) return;
+        if (mc.screen != null) return;
+        if (mc.player == null) return;
+
+        ItemStack weapon = mc.player.getMainHandItem();
+        if (!(weapon.getItem() instanceof SwordItem)) return;
+
+        System.out.println("パケット送信"); // ← 追加
+        PacketDistributor.sendToServer(new RequestAttackPacket());
     }
 
     //レイヤーを登録

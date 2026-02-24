@@ -1,9 +1,12 @@
 package com.hatsukaze.overreaction;
 
+import com.hatsukaze.overreaction.combat.CombatProcessor;
 import com.hatsukaze.overreaction.data.ComboReloadListener;
 import com.hatsukaze.overreaction.network.AnimationPacketHandler;
 import com.hatsukaze.overreaction.network.PlayAnimationPacket;
+import com.hatsukaze.overreaction.network.RequestAttackPacket;
 import com.hatsukaze.overreaction.registry.ModAttachments;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -108,6 +111,18 @@ public class ExampleMod {
                 PlayAnimationPacket.TYPE,
                 PlayAnimationPacket.STREAM_CODEC,
                 AnimationPacketHandler::handlePlayAnimation
+        );
+
+        //サーバーにパケットが送信される（パケット送信メソッドが動いたとき）に発火。自動？unityのサブスクライブみたいなものなのかな
+        // 追加
+        registrar.playToServer(
+                RequestAttackPacket.TYPE,
+                RequestAttackPacket.STREAM_CODEC,
+                (packet, context) -> context.enqueueWork(() -> {
+                    if (context.player() instanceof ServerPlayer player) {
+                        CombatProcessor.processAttack(player);
+                    }
+                })
         );
     }
 

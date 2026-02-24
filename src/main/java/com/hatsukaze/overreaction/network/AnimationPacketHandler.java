@@ -33,10 +33,6 @@ public class AnimationPacketHandler {
     @OnlyIn(Dist.CLIENT)
     private static void handleClient(PlayAnimationPacket packet) {
         // 元のクライアント処理をここに移動
-        Minecraft.getInstance().player.sendSystemMessage(
-                Component.literal("パケット受信: " + packet.animationName())
-        );
-
             Minecraft.getInstance().player.sendSystemMessage(
                     net.minecraft.network.chat.Component.literal("パケット受信: " + packet.animationName())
             );

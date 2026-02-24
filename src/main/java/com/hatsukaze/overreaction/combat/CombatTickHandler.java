@@ -82,13 +82,14 @@ public class CombatTickHandler {
         }
 
         //EventHandlerでfalse-ifやってるからこっちはそれが再生されなかった場合、ヒット後に再生
-        if (attackDef.playOnHit) {
+        if (!targets.isEmpty() && attackDef.playOnHit && !state.hasAnimationPlayed()) {
+            state.setAnimationPlayed(true);
             PlayAnimationPacket packet = new PlayAnimationPacket(
                     player.getId(),
                     attackDef.animationId
             );
-            PacketDistributor.sendToPlayer(player, packet);
-            PacketDistributor.sendToPlayersTrackingEntity(player, packet);
+            System.out.println("TickHandler送信");
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, packet);
         }
 
     }

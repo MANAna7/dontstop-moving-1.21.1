@@ -22,6 +22,12 @@ public class CombatStateAttachment implements INBTSerializable<CompoundTag> {
     //攻撃が当たった敵を配列で保存することによって、ヒットボックスが継続してでる攻撃でも一度のみになる。ディノバルドの大回転斬のガードみたいなのを防ぐ
     private final Set<UUID> hitEntities = new HashSet<>();
 
+    private boolean animationPlayed = false;
+
+    // --- hitFlg ---
+    public boolean hasAnimationPlayed() { return animationPlayed; }
+    public void setAnimationPlayed(boolean played) { this.animationPlayed = played; }
+
     // --- attackIndex ---
     public int getAttackIndex() { return attackIndex; }
     public void setAttackIndex(int index) { this.attackIndex = index; }
