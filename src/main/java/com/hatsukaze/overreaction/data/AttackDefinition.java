@@ -13,17 +13,20 @@ public class AttackDefinition {
     public final float cooldown;
     public final float hitWindowStart;
     public final float hitWindowEnd;
+    public final boolean playOnHit;
     // hitboxは今は省略、後で追加
 
     private AttackDefinition(String id, String animationId,
                              float damageMultiplier, float cooldown,
-                             float hitWindowStart, float hitWindowEnd) {
+                             float hitWindowStart, float hitWindowEnd,
+                             boolean playOnHit) {
         this.id = id;
         this.animationId = animationId;
         this.damageMultiplier = damageMultiplier;
         this.cooldown = cooldown;
         this.hitWindowStart = hitWindowStart;
         this.hitWindowEnd = hitWindowEnd;
+        this.playOnHit = playOnHit;
     }
 
     /**
@@ -38,7 +41,8 @@ public class AttackDefinition {
         JsonObject hw        = json.getAsJsonObject("hit_window");
         float hwStart        = hw.get("start").getAsFloat();
         float hwEnd          = hw.get("end").getAsFloat();
+        boolean playOnHit    = json.get("play_on_hit").getAsBoolean();
 
-        return new AttackDefinition(id, animation, dmgMult, cooldown, hwStart, hwEnd);
+        return new AttackDefinition(id, animation, dmgMult, cooldown, hwStart, hwEnd, playOnHit);
     }
 }

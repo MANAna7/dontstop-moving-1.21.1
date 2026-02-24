@@ -3,6 +3,7 @@ package com.hatsukaze.overreaction.combat;
 import com.hatsukaze.overreaction.attachment.CombatStateAttachment;
 import com.hatsukaze.overreaction.data.AttackDefinition;
 import com.hatsukaze.overreaction.data.ComboDefinition;
+import com.hatsukaze.overreaction.network.PlayAnimationPacket;
 import com.hatsukaze.overreaction.registry.ComboRegistry;
 import com.hatsukaze.overreaction.registry.ModAttachments;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.SwordItem;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import static com.hatsukaze.overreaction.ExampleMod.MODID;
 
@@ -50,6 +52,15 @@ public class CombatEventHandler {
         state.setAttackTimer(0f);
         state.setAttackIndex((nextIndex + 1) % combo.size());
 
-        // TODO: クライアントにアニメーション再生パケット送る（Step5で実装）
+        // クライアントにアニメーション再生パケット送る
+        PlayAnimationPacket packet = new PlayAnimationPacket(
+                player.getId(),
+                attackDef.animationId
+        );
+
+        if (!attackDef.playOnHit) {
+            PacketDistributor.sendToPlayer(player, packet);
+            PacketDistributor.sendToPlayersTrackingEntity(player, packet);
+        }
     }
 }

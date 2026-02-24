@@ -1,8 +1,12 @@
 package com.hatsukaze.overreaction;
 
 import com.hatsukaze.overreaction.data.ComboReloadListener;
+import com.hatsukaze.overreaction.network.AnimationPacketHandler;
+import com.hatsukaze.overreaction.network.PlayAnimationPacket;
 import com.hatsukaze.overreaction.registry.ModAttachments;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -90,6 +94,21 @@ public class ExampleMod {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
         ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
+
+        // パケット登録を追加
+        modEventBus.addListener(this::registerPayloads);
+    }
+
+    //Payloadsの追加
+    //クライアントに、パケットタイプとストリームコーデック、アニメーションのパケットを送信
+    private void registerPayloads(RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("1");
+
+        registrar.playToClient(
+                PlayAnimationPacket.TYPE,
+                PlayAnimationPacket.STREAM_CODEC,
+                AnimationPacketHandler::handlePlayAnimation
+        );
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

@@ -4,7 +4,7 @@
 		"test_anim": {
 			"animation_length": 1.5,
 			"bones": {
-				"leftArm": {
+				"left_arm": {
 					"rotation": {
 						"0.125": {
 							"vector": [0, 0, 0]

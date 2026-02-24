@@ -2,6 +2,7 @@ package com.hatsukaze.overreaction.combat;
 
 import com.hatsukaze.overreaction.attachment.CombatStateAttachment;
 import com.hatsukaze.overreaction.data.AttackDefinition;
+import com.hatsukaze.overreaction.network.PlayAnimationPacket;
 import com.hatsukaze.overreaction.registry.ModAttachments;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -12,6 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
 
@@ -77,6 +79,16 @@ public class CombatTickHandler {
             System.out.println("Damage: " + damage + " (multiplier: " + attackDef.damageMultiplier + ")"); // ←追加
             DamageSource damageSource = player.damageSources().playerAttack(player);
             target.hurt(damageSource, damage);
+        }
+
+        //EventHandlerでfalse-ifやってるからこっちはそれが再生されなかった場合、ヒット後に再生
+        if (attackDef.playOnHit) {
+            PlayAnimationPacket packet = new PlayAnimationPacket(
+                    player.getId(),
+                    attackDef.animationId
+            );
+            PacketDistributor.sendToPlayer(player, packet);
+            PacketDistributor.sendToPlayersTrackingEntity(player, packet);
         }
 
     }

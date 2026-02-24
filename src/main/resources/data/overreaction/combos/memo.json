@@ -1,0 +1,55 @@
+{
+  "type": "combo",
+  "id": "one_handed_sword_basic",
+  "attacks": [
+    {
+      "id": "light_1",
+      "animation": "one_handed_light_1",
+      "play_on_hit": false,
+      "damage_multiplier": 0.2,
+      "cooldown": 0.4,
+      "upswing": 0.2,
+      "hit_window": {
+        "start": 0.25,
+        "end": 0.35
+      },
+      "hitbox": {
+        "offset": { "x": 1.5, "y": 0.5, "z": 0.0 },
+        "size":   { "x": 2.0, "y": 1.5, "z": 1.5 }
+      }
+    },
+    {
+      "id": "light_2",
+      "animation": "one_handed_light_2",
+      "play_on_hit": false,
+      "damage_multiplier": 1.0,
+      "cooldown": 0.6,
+      "upswing": 0.3,
+      "hit_window": {
+        "start": 0.3,
+        "end": 0.45
+      },
+      "hitbox": {
+        "offset": { "x": 1.8, "y": 0.5, "z": 0.0 },
+        "size":   { "x": 2.2, "y": 1.5, "z": 1.6 }
+      }
+    },
+    {
+      "id": "finisher",
+      "animation": "one_handed_finisher",
+      "play_on_hit": false,
+      "damage_multiplier": 3.4,
+      "cooldown": 0.9,
+      "upswing": 0.45,
+      "hit_window": {
+        "start": 0.5,
+        "end": 0.7
+      },
+      "hitbox": {
+        "offset": { "x": 2.0, "y": 0.5, "z": 0.0 },
+        "size":   { "x": 2.5, "y": 1.6, "z": 1.8 }
+      },
+      "knockback": 1.5
+    }
+  ]
+}
