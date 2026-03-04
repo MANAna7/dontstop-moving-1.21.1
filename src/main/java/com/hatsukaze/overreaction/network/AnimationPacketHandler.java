@@ -2,6 +2,7 @@ package com.hatsukaze.overreaction.network;
 
 import com.hatsukaze.overreaction.ExampleMod;
 import com.hatsukaze.overreaction.ExampleModClient;
+import com.hatsukaze.overreaction.manager.ClientHitStopManager;
 import com.hatsukaze.overreaction.network.PlayAnimationPacket;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationAccess;
@@ -50,5 +51,22 @@ public class AnimationPacketHandler {
             controller.triggerAnimation(
                     ResourceLocation.fromNamespaceAndPath("overreaction", packet.animationName())
             );
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static void handleHitStop(HitStopPacket packet, IPayloadContext context) {
+        context.enqueueWork(() -> handleHitStopClient(packet));
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void handleHitStopClient(HitStopPacket packet) {
+        Entity entity = Minecraft.getInstance().level.getEntity(packet.entityId());
+        if (!(entity instanceof AbstractClientPlayer player)) return;
+
+        PlayerAnimationController controller = (PlayerAnimationController)
+                PlayerAnimationAccess.getPlayerAnimationLayer(player, ExampleModClient.ATTACK_LAYER_ID);
+        if (controller == null) return;
+
+        ClientHitStopManager.start(controller, packet.duration());
     }
 }

@@ -3,6 +3,7 @@ package com.hatsukaze.overreaction;
 import com.hatsukaze.overreaction.combat.CombatProcessor;
 import com.hatsukaze.overreaction.data.ComboReloadListener;
 import com.hatsukaze.overreaction.network.AnimationPacketHandler;
+import com.hatsukaze.overreaction.network.HitStopPacket;
 import com.hatsukaze.overreaction.network.PlayAnimationPacket;
 import com.hatsukaze.overreaction.network.RequestAttackPacket;
 import com.hatsukaze.overreaction.registry.ModAttachments;
@@ -111,6 +112,12 @@ public class ExampleMod {
                 PlayAnimationPacket.TYPE,
                 PlayAnimationPacket.STREAM_CODEC,
                 AnimationPacketHandler::handlePlayAnimation
+        );
+
+        registrar.playToClient(
+                HitStopPacket.TYPE,
+                HitStopPacket.STREAM_CODEC,
+                AnimationPacketHandler::handleHitStop
         );
 
         //サーバーにパケットが送信される（パケット送信メソッドが動いたとき）に発火。自動？unityのサブスクライブみたいなものなのかな

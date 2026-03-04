@@ -40,7 +40,7 @@ public class ComboReloadListener extends SimpleJsonResourceReloadListener {
             }
         }
 
-        LOGGER.info("[DontStopMoving] Loaded {} combo(s)", ComboRegistry.getAll().size());
+        LOGGER.info("[Over Re Action] Loaded {} combo(s)", ComboRegistry.getAll().size());
     }
 
 }

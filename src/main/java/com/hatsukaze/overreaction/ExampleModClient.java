@@ -1,8 +1,13 @@
 package com.hatsukaze.overreaction;
 
 import com.hatsukaze.overreaction.network.RequestAttackPacket;
+import com.hatsukaze.overreaction.manager.ClientHitStopManager;
+
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
+import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import com.zigythebird.playeranim.api.PlayerAnimationFactory;
+import com.zigythebird.playeranimcore.api.firstPerson.FirstPersonConfiguration;
+import com.zigythebird.playeranimcore.api.firstPerson.FirstPersonMode;
 import com.zigythebird.playeranimcore.enums.PlayState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -14,6 +19,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -41,10 +47,23 @@ public class ExampleModClient {
             PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
                     ATTACK_LAYER_ID,
                     1500,
-                    //これは毎時参照されるやつ、常に再生するアニメーションはないからSTOPしておく
-                    player -> new PlayerAnimationController(player,
-                            (controller, state, animSetter) -> PlayState.STOP
-                    )
+                    player -> {
+                        PlayerAnimationController controller = new PlayerAnimationController(player,
+                                (c, state, animSetter) -> PlayState.STOP
+                        );
+                        // 一人称設定を追加
+                        controller.setFirstPersonMode(FirstPersonMode.THIRD_PERSON_MODEL);
+                        controller.setFirstPersonConfiguration(
+                                new FirstPersonConfiguration(
+                                        true,  // showRightArm
+                                        true,  // showLeftArm
+                                        true,  // showRightItem
+                                        true,  // showLeftItem
+                                        false  // showArmor
+                                )
+                        );
+                        return controller;
+                    }
             );
         });
     }
@@ -64,9 +83,27 @@ public class ExampleModClient {
         PacketDistributor.sendToServer(new RequestAttackPacket());
     }
 
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+
+        PlayerAnimationController controller = (PlayerAnimationController)
+                PlayerAnimationAccess.getPlayerAnimationLayer(
+                        mc.player, ATTACK_LAYER_ID
+                );
+        if (controller == null) return;
+
+        ClientHitStopManager.tick(controller);
+    }
+
+
+
     //レイヤーを登録
     public static final ResourceLocation ATTACK_LAYER_ID =
             ResourceLocation.fromNamespaceAndPath("overreaction", "attack_layer");
 
 }
+
+
 

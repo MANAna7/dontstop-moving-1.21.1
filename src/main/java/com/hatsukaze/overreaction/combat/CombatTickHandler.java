@@ -2,8 +2,11 @@ package com.hatsukaze.overreaction.combat;
 
 import com.hatsukaze.overreaction.attachment.CombatStateAttachment;
 import com.hatsukaze.overreaction.data.AttackDefinition;
+import com.hatsukaze.overreaction.network.HitStopPacket;
 import com.hatsukaze.overreaction.network.PlayAnimationPacket;
 import com.hatsukaze.overreaction.registry.ModAttachments;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -19,78 +22,164 @@ import java.util.List;
 
 import static com.hatsukaze.overreaction.ExampleMod.MODID;
 
-//EventBusSubscriber このクラスのstaticメソッドを自動でイベントバスに登録してくれる。ExampleModのコンストラクタでregisterする必要なし！
 @EventBusSubscriber(modid = MODID)
 public class CombatTickHandler {
 
-    //onPlayerTick プレイヤーのtick処理が終わった後に発火される。unityでいうUpdate()みたいなやつ
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
-        //stateから今の状態を取得してくる。EventHandlerでstateは更新される。
         CombatStateAttachment state = player.getData(ModAttachments.COMBAT_STATE);
+        CombatStateAttachment.CombatPhase phase = state.getPhase();
+
+        System.out.println("Tick phase: " + phase); //DEBUG:
+
+        // IDLEなら何もしない
+        if (phase == CombatStateAttachment.CombatPhase.IDLE) return;
+
         AttackDefinition currentAttack = state.getCurrentAttackDef();
+        if (currentAttack == null) return;
 
-        if (currentAttack == null) return; // 攻撃中じゃなければ何もしない
-
-        // タイマーを進める（1tick = 0.05秒）
         float timer = state.getAttackTimer() + 0.05f;
         state.setAttackTimer(timer);
 
-        // hit_windowに入ったらヒット判定
-        if (timer >= currentAttack.hitWindowStart && timer <= currentAttack.hitWindowEnd) {
-            performHitDetection(player, currentAttack, state);
-        }
+        switch (phase) {
+            case ATTACKING -> {
+                //割合で攻撃コライダーを生成するタイミングを変える。
+                float total = state.getTotalAttackingTime();
+                float hwStart = total * currentAttack.hitWindowStart;
+                float hwEnd   = total * currentAttack.hitWindowEnd;
 
-        // cooldown超えたらリセット
-        if (timer > currentAttack.cooldown) {
-            state.setCurrentAttackDef(null);
-            state.setAttackTimer(0f);
+                //ヒット判定のウィンドウを開始
+                if (timer >= hwStart && timer <= hwEnd) {
+                    List<Entity> targets = performHitDetection(player, currentAttack, state);
+                    if (!targets.isEmpty() && currentAttack.hitStop != null) {
+                        state.setPhase(CombatStateAttachment.CombatPhase.HIT_STOP);
+                        state.setAttackTimer(0f);
+                        HitStopPacket packet = new HitStopPacket(
+                                player.getId(),
+                                currentAttack.hitStop.duration
+                        );
+                        PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, packet);
+                        return;
+                    }
+                }
+
+                // ヒットウィンドウ終了 → RECOVERYへ（recoveryがなければIDLEへ）
+                if (timer > total) {  // hitWindowEndじゃなくてtotalで終了
+                    if (currentAttack.recovery != null) {
+                        state.setPhase(CombatStateAttachment.CombatPhase.RECOVERY);
+                        state.setAttackTimer(0f);
+                    } else {
+                        resetToIdle(state);
+                    }
+                }
+            }
+
+            case HIT_STOP -> {
+                if (currentAttack.hitStop == null || timer > currentAttack.hitStop.duration) {
+                    if (currentAttack.recovery != null) {
+                        state.setPhase(CombatStateAttachment.CombatPhase.RECOVERY);
+                        state.setAttackTimer(0f);
+                    } else {
+                        resetToIdle(state);
+                    }
+                }
+            }
+
+            case RECOVERY -> {
+                if (currentAttack.recovery == null) {
+                    startComboWindow(state);
+                    return;
+                }
+                if (currentAttack.recovery.cancelable && state.hasBufferedInput()) {
+                    state.setBufferedInput(false);
+                    state.setPhase(CombatStateAttachment.CombatPhase.COMBO_WINDOW); //先にフェーズ変更
+                    CombatProcessor.processAttack(player);
+                    return;
+                }
+                if (timer > currentAttack.recovery.duration) {
+                    startComboWindow(state);
+                }
+            }
+            case COMBO_WINDOW -> {
+                float windowTimer = state.getComboWindowTimer() + 0.05f;
+                state.setComboWindowTimer(windowTimer);
+
+                if (state.hasBufferedInput()) {
+                    state.setBufferedInput(false);
+                    CombatProcessor.processAttack(player);
+                    return;
+                }
+                // 0.3秒でタイムアウト、入力受付時間をここで設定している
+                if (windowTimer > 0.5f) {
+                    resetToIdle(state);
+                }
+            }
         }
     }
 
-    //攻撃の当たり判定処理===================
-    private static void performHitDetection(ServerPlayer player,
+    private static void resetToIdle(CombatStateAttachment state) {
+        state.setPhase(CombatStateAttachment.CombatPhase.IDLE);
+        state.setCurrentAttackDef(null);
+        state.setCurrentNodeId(null);
+        state.setAttackTimer(0f);
+        state.setComboWindowTimer(-1f);
+        state.setBufferedInput(false);
+    }
+
+    private static void startComboWindow(CombatStateAttachment state) {
+        state.setPhase(CombatStateAttachment.CombatPhase.COMBO_WINDOW);
+        state.setComboWindowTimer(0f);
+        state.setAttackTimer(0f);
+        state.setBufferedInput(false);
+    }
+
+    private static List performHitDetection(ServerPlayer player,
                                             AttackDefinition attackDef,
                                             CombatStateAttachment state) {
-        // とりあえず簡易AABB（前方2x2x2ブロック固定）
         Vec3 playerPos = player.position();
         Vec3 lookVec = player.getLookAngle();
-        Vec3 center = playerPos.add(lookVec.scale(1.5)); // 前方1.5ブロック
+        Vec3 center = playerPos.add(lookVec.scale(1.5));
 
         AABB hitbox = new AABB(
                 center.x - 1, center.y, center.z - 1,
                 center.x + 1, center.y + 2, center.z + 1
         );
 
-        // AABB内のエンティティ取得
         List<Entity> targets = player.level().getEntities(
                 player, hitbox, e -> e instanceof LivingEntity && e != player
         );
 
-        // ダメージ適用もここで===================
+        // デバッグ用：ヒットボックスをパーティクルで可視化
+        if (player.level() instanceof ServerLevel serverLevel) {
+            for (double x = hitbox.minX; x <= hitbox.maxX; x += 0.5) {
+                for (double y = hitbox.minY; y <= hitbox.maxY; y += 0.5) {
+                    for (double z = hitbox.minZ; z <= hitbox.maxZ; z += 0.5) {
+                        serverLevel.sendParticles(ParticleTypes.FLAME,
+                                x, y, z, 1, 0, 0, 0, 0);
+                    }
+                }
+            }
+        }
+
         for (Entity target : targets) {
-            if (state.hasHit(target.getUUID())) continue; // 同一攻撃で2回当てない
+            if (state.hasHit(target.getUUID())) continue;
             state.addHitEntity(target.getUUID());
 
-            // とりあえず固定5ダメージ（後で武器の攻撃力×倍率に変える）
             float damage = 5.0f * attackDef.damageMultiplier;
-            System.out.println("Damage: " + damage + " (multiplier: " + attackDef.damageMultiplier + ")"); // ←追加
             DamageSource damageSource = player.damageSources().playerAttack(player);
             target.hurt(damageSource, damage);
         }
 
-        //EventHandlerでfalse-ifやってるからこっちはそれが再生されなかった場合、ヒット後に再生
         if (!targets.isEmpty() && attackDef.playOnHit && !state.hasAnimationPlayed()) {
             state.setAnimationPlayed(true);
             PlayAnimationPacket packet = new PlayAnimationPacket(
                     player.getId(),
                     attackDef.animationId
             );
-            System.out.println("TickHandler送信");
             PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, packet);
         }
-
+        return targets;
     }
 }

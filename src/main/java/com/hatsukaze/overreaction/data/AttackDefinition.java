@@ -10,23 +10,32 @@ public class AttackDefinition {
     public final String id;
     public final String animationId;
     public final float damageMultiplier;
-    public final float cooldown;
     public final float hitWindowStart;
     public final float hitWindowEnd;
     public final boolean playOnHit;
-    // hitboxは今は省略、後で追加
+    public final float attackingTimeBase;
 
-    private AttackDefinition(String id, String animationId,
-                             float damageMultiplier, float cooldown,
-                             float hitWindowStart, float hitWindowEnd,
-                             boolean playOnHit) {
+    // nullable
+    public final HitStopDefinition hitStop;
+    public final RecoveryDefinition recovery;
+    public final ChargeDefinition charge;
+
+
+
+    private AttackDefinition(String id, String animationId, float damageMultiplier,
+                             float hitWindowStart, float hitWindowEnd, boolean playOnHit, float attackingTimeBase,
+                             HitStopDefinition hitStop, RecoveryDefinition recovery,
+                             ChargeDefinition charge) {
         this.id = id;
         this.animationId = animationId;
         this.damageMultiplier = damageMultiplier;
-        this.cooldown = cooldown;
         this.hitWindowStart = hitWindowStart;
         this.hitWindowEnd = hitWindowEnd;
         this.playOnHit = playOnHit;
+        this.attackingTimeBase = attackingTimeBase;
+        this.hitStop = hitStop;
+        this.recovery = recovery;
+        this.charge = charge;
     }
 
     /**
@@ -34,15 +43,29 @@ public class AttackDefinition {
      * getting data in json
      */
     public static AttackDefinition fromJson(JsonObject json) {
-        String id            = json.get("id").getAsString();
-        String animation     = json.get("animation").getAsString();
-        float dmgMult        = json.get("damage_multiplier").getAsFloat();
-        float cooldown       = json.get("cooldown").getAsFloat();
-        JsonObject hw        = json.getAsJsonObject("hit_window");
-        float hwStart        = hw.get("start").getAsFloat();
-        float hwEnd          = hw.get("end").getAsFloat();
-        boolean playOnHit    = json.get("play_on_hit").getAsBoolean();
+        String id           = json.get("id").getAsString();
+        String animationId  = json.get("animationId").getAsString();
+        float dmgMult       = json.get("damageMultiplier").getAsFloat();
+        float atkTimeBase  = json.has("attackingTimeBase") ? json.get("attackingTimeBase").getAsFloat() : 1.0f;
 
-        return new AttackDefinition(id, animation, dmgMult, cooldown, hwStart, hwEnd, playOnHit);
+        // hitWindowがnullの場合
+        float hwStart = 0f;
+        float hwEnd = 0f;
+        if (json.has("hitWindow") && !json.get("hitWindow").isJsonNull()) {
+            JsonObject hw = json.getAsJsonObject("hitWindow");
+            hwStart = hw.get("start").getAsFloat();
+            hwEnd = hw.get("end").getAsFloat();
+        }
+        boolean playOnHit   = json.get("playOnHit").getAsBoolean();
+
+        HitStopDefinition hitStop = (json.has("hitStop") && !json.get("hitStop").isJsonNull())
+                ? HitStopDefinition.fromJson(json.getAsJsonObject("hitStop")) : null;
+        RecoveryDefinition recovery = (json.has("recovery") && !json.get("recovery").isJsonNull())
+                ? RecoveryDefinition.fromJson(json.getAsJsonObject("recovery")) : null;
+        ChargeDefinition charge = (json.has("charge") && !json.get("charge").isJsonNull())
+                ? ChargeDefinition.fromJson(json.getAsJsonObject("charge")) : null;
+
+        return new AttackDefinition(id, animationId, dmgMult, hwStart, hwEnd,
+                playOnHit , atkTimeBase , hitStop, recovery, charge);
     }
 }

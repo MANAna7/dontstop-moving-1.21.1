@@ -3,39 +3,50 @@ package com.hatsukaze.overreaction.data;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- *combo自体を管理するクラス。これをベースに、jsonからとってきたものをクラスに当てはめてcomboを作成する。
- **/
+ * コンボ全体を管理するクラス。配列からMap<String, ComboNode>のツリー構造に変更。
+ */
 public class ComboDefinition {
     public final String id;
-    private final List<AttackDefinition> attacks;
+    public final String entryNode;  // コンボ開始ノードのID
+    private final Map<String, ComboNode> nodes;
 
-    private ComboDefinition(String id, List<AttackDefinition> attacks) {
+    private ComboDefinition(String id, String entryNode, Map<String, ComboNode> nodes) {
         this.id = id;
-        this.attacks = Collections.unmodifiableList(attacks);
+        this.entryNode = entryNode;
+        this.nodes = Collections.unmodifiableMap(nodes);
     }
 
-    public AttackDefinition getAttack(int index) {
-        return attacks.get(index % attacks.size());
+    /** IDでノードを取得。存在しなければnull */
+    public ComboNode getNode(String nodeId) {
+        return nodes.get(nodeId);
     }
 
-    public int size() {
-        return attacks.size();
+    /** エントリーノードを取得 */
+    public ComboNode getEntryNode() {
+        return nodes.get(entryNode);
     }
 
     public static ComboDefinition fromJson(JsonObject json) {
         String id = json.get("id").getAsString();
-        JsonArray attacksJson = json.getAsJsonArray("attacks");
+        // entryNodeの指定がなければnodesの最初のノードをエントリーにする
+        JsonArray nodesJson = json.getAsJsonArray("nodes");
 
-        List<AttackDefinition> attacks = new ArrayList<>();
-        attacksJson.forEach(el -> attacks.add(
-                AttackDefinition.fromJson(el.getAsJsonObject())
-        ));
+        Map<String, ComboNode> nodes = new LinkedHashMap<>();
+        nodesJson.forEach(el -> {
+            JsonObject nodeJson = el.getAsJsonObject();
+            ComboNode node = ComboNode.fromJson(nodeJson);
+            nodes.put(node.attackDef.id, node);
+        });
 
-        return new ComboDefinition(id, attacks);
+        String entryNode = json.has("entryNode")
+                ? json.get("entryNode").getAsString()
+                : nodes.keySet().iterator().next(); // 最初のノードをデフォルトに
+
+        return new ComboDefinition(id, entryNode, nodes);
     }
 }

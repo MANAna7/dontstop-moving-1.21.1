@@ -1,22 +1,111 @@
 {
-  "type": "combo",
   "id": "one_handed_sword_basic",
-  "attacks": [
+  "nodes": [
     {
-      "id": "light_1",
-      "animation": "test_anim",
-      "play_on_hit": false,
-      "damage_multiplier": 0.2,
-      "cooldown": 0.4,
-      "upswing": 0.2,
-      "hit_window": {
-        "start": 0.25,
-        "end": 0.35
+      "id": "slash_1",
+      "animationId": "sword_slash_1",
+      "attackingTimeBase": 1.0,
+      "hitWindow": { "start": 0.2, "end": 0.7 },
+      "damageMultiplier": 1.0,
+      "playOnHit": false,
+      "hitStop": {
+        "duration": 2.08
       },
-      "hitbox": {
-        "offset": { "x": 1.5, "y": 0.5, "z": 0.0 },
-        "size":   { "x": 2.0, "y": 1.5, "z": 1.5 }
+      "recovery": {
+        "animationId": "sword_recovery_1",
+        "duration": 2.4,
+        "cancelable": true
+      },
+      "leftClickNext": "slash_2",
+      "rightClickNext": "guard"
+    },
+    {
+      "id": "slash_2",
+      "animationId": "sword_slash_2",
+      "attackingTimeBase": 1.0,
+      "hitWindow": { "start": 0.2, "end": 0.7 },
+      "damageMultiplier": 1.0,
+      "playOnHit": false,
+      "hitStop": {
+        "duration": 0.08
+      },
+      "recovery": {
+        "animationId": "sword_recovery_2",
+        "duration": 0.4,
+        "cancelable": true
+      },
+      "leftClickNext": "slash_3",
+      "rightClickNext": "guard"
+    },
+    {
+      "id": "slash_3",
+      "animationId": "sword_slash_3",
+      "attackingTimeBase": 1.0,
+      "hitWindow": { "start": 0.3, "end": 0.7 },
+      "damageMultiplier": 1.2,
+      "playOnHit": false,
+      "hitStop": {
+        "duration": 0.08
+      },
+      "recovery": {
+        "animationId": "sword_recovery_heavy",
+        "duration": 2.4,
+        "cancelable": false
+      },
+      "leftClickNext": "slash_1",
+      "rightClickNext": "special_after_3"
+    },
+    {
+      "id": "guard",
+      "animationId": "sword_guard",
+      "hitWindow": null,
+      "damageMultiplier": 0,
+      "playOnHit": false,
+      "hitStop": null,
+      "recovery": {
+        "animationId": "sword_guard_end",
+        "duration": 0.3,
+        "cancelable": true
+      },
+      "leftClickNext": "slash_1",
+      "rightClickNext": null
+    },
+    {
+      "id": "special_after_3",
+      "animationId": "sword_special",
+      "attackingTimeBase": 1.0,
+      "hitWindow": { "start": 0.4, "end": 0.8 },
+      "damageMultiplier": 1.8,
+      "playOnHit": true,
+      "hitStop": {
+        "duration": 0.08
+      },
+      "recovery": {
+        "animationId": "sword_special_recovery",
+        "duration": 1.2,
+        "cancelable": false
+      },
+      "leftClickNext": "slash_1",
+      "rightClickNext": null,
+      "charge": {
+        "chargingAnimationId": "sword_charge_loop",
+        "releaseAnimationId": "sword_charge_release",
+        "chargeStages": [
+          { "duration": 0.5, "damageMultiplier": 1.1, "animationId": "charge_stage1" },
+          { "duration": 1.5, "damageMultiplier": 1.5, "animationId": "charge_stage2" }
+        ]
       }
     }
-  ]
+  ],
+  "aerialAttack": {
+    "animationId": "sword_aerial",
+    "hitWindow": { "start": 0.2, "end": 0.5 },
+    "damageMultiplier": 1.1,
+    "hitStop": {
+      "duration": 0.08
+    },
+    "conditions": ["combo_none", "after_combo_slash_3"],
+    "landingComboEntry": null,
+    "landingComboEntryOnHit": null
+  }
 }

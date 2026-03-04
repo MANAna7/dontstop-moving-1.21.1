@@ -15,22 +15,50 @@ import java.util.UUID;
  *
  **/
 public class CombatStateAttachment implements INBTSerializable<CompoundTag> {
-    private String currentComboId = "";
-    private int attackIndex = 0;
+
+    //戦闘のフェーズ。フェーズにわけてモーションを管理、操作していく
+    public enum CombatPhase {
+        IDLE,
+        ATTACKING,
+        HIT_STOP,
+        RECOVERY,
+        COMBO_WINDOW
+    }
+
+    private CombatPhase phase = CombatPhase.IDLE;
+    private String currentNodeId = null; // nullはIDLE（コンボ未開始）
+
     private float attackTimer = 0f;
     private AttackDefinition currentAttackDef = null;
     //攻撃が当たった敵を配列で保存することによって、ヒットボックスが継続してでる攻撃でも一度のみになる。ディノバルドの大回転斬のガードみたいなのを防ぐ
     private final Set<UUID> hitEntities = new HashSet<>();
 
+    private float totalAttackingTime = 0f;
+
     private boolean animationPlayed = false;
+
+    //この辺はコンボ後に先行入力とか入力待ちを作るための処理
+    private boolean bufferedInput = false;
+    private float comboWindowTimer = -1f; // -1 = ウィンドウ非アクティブ
+
+
+
+    public boolean hasBufferedInput() { return bufferedInput; }
+    public void setBufferedInput(boolean b) { this.bufferedInput = b; }
+    public float getComboWindowTimer() { return comboWindowTimer; }
+    public void setComboWindowTimer(float t) { this.comboWindowTimer = t; }
+
+    // --- phase ---
+    public CombatPhase getPhase() { return phase; }
+    public void setPhase(CombatPhase phase) { this.phase = phase;}
+
+    // --- currentNodeId ---
+    public String getCurrentNodeId() { return currentNodeId; }
+    public void setCurrentNodeId(String nodeId) { this.currentNodeId = nodeId; }
 
     // --- hitFlg ---
     public boolean hasAnimationPlayed() { return animationPlayed; }
     public void setAnimationPlayed(boolean played) { this.animationPlayed = played; }
-
-    // --- attackIndex ---
-    public int getAttackIndex() { return attackIndex; }
-    public void setAttackIndex(int index) { this.attackIndex = index; }
 
     // --- attackTimer ---
     public float getAttackTimer() { return attackTimer; }
@@ -47,18 +75,21 @@ public class CombatStateAttachment implements INBTSerializable<CompoundTag> {
     public boolean hasHit(UUID uuid) { return hitEntities.contains(uuid); }
     public void addHitEntity(UUID uuid) { hitEntities.add(uuid); }
 
+    // --- AttackingTimes ---
+    public float getTotalAttackingTime() { return totalAttackingTime; }
+    public void setTotalAttackingTime(float t) { this.totalAttackingTime = t; }
+
     // --- シリアライズ（ログアウト時の保存用） ---
     public CompoundTag save() {
         CompoundTag tag = new CompoundTag();
-        tag.putString("comboId", currentComboId);
-        tag.putInt("attackIndex", attackIndex);
+        tag.putString("currentNodeId", currentNodeId != null ? currentNodeId : "");
         tag.putFloat("attackTimer", attackTimer);
         return tag;
     }
 
     public void load(CompoundTag tag) {
-        this.currentComboId = tag.getString("comboId");
-        this.attackIndex    = tag.getInt("attackIndex");
+        String nodeId = tag.getString("currentNodeId");
+        this.currentNodeId = nodeId.isEmpty() ? null : nodeId;
         this.attackTimer    = tag.getFloat("attackTimer");
         // currentAttackDefはランタイムのみ、保存不要
     }
