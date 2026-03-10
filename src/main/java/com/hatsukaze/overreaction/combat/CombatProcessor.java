@@ -77,8 +77,9 @@ public class CombatProcessor {
         state.setAttackTimer(0f);
         state.setAnimationPlayed(false);
 
+        //Hit時に発動する特別なモーションではないときtrue
         if (!attackDef.playOnHit) {
-            PlayAnimationPacket packet = new PlayAnimationPacket(player.getId(), attackDef.animationId);
+            PlayAnimationPacket packet = new PlayAnimationPacket(player.getId(), attackDef.animationId, totalAttackingTime, attackDef.animationNaturalTime);
             PacketDistributor.sendToPlayer(player, packet);
         }
     }

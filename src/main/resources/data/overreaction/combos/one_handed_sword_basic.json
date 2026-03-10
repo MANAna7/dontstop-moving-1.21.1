@@ -4,12 +4,13 @@
     {
       "id": "slash_1",
       "animationId": "sword_slash_1",
-      "attackingTimeBase": 1.0,
+      "animationNaturalTime": 0.54,
+      "attackingTimeBase": 8.0,
       "hitWindow": { "start": 0.2, "end": 0.7 },
       "damageMultiplier": 1.0,
       "playOnHit": false,
       "hitStop": {
-        "duration": 2.08
+        "duration": 0.1
       },
       "recovery": {
         "animationId": "sword_recovery_1",
@@ -22,6 +23,7 @@
     {
       "id": "slash_2",
       "animationId": "sword_slash_2",
+      "animationNaturalTime": 0.54,
       "attackingTimeBase": 1.0,
       "hitWindow": { "start": 0.2, "end": 0.7 },
       "damageMultiplier": 1.0,
@@ -40,6 +42,7 @@
     {
       "id": "slash_3",
       "animationId": "sword_slash_3",
+      "animationNaturalTime": 0.54,
       "attackingTimeBase": 1.0,
       "hitWindow": { "start": 0.3, "end": 0.7 },
       "damageMultiplier": 1.2,

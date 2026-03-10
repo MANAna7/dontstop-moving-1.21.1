@@ -6,6 +6,7 @@ import com.hatsukaze.overreaction.manager.ClientHitStopManager;
 import com.hatsukaze.overreaction.network.PlayAnimationPacket;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranim.api.PlayerAnimationAccess;
+import com.zigythebird.playeranimcore.animation.layered.modifier.SpeedModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.network.chat.Component;
@@ -46,11 +47,15 @@ public class AnimationPacketHandler {
                     PlayerAnimationAccess.getPlayerAnimationLayer(player, ExampleModClient.ATTACK_LAYER_ID);
             if (controller == null) return;
 
-            // アニメーション再生、名前空間の設定したアニメーションを起動
+        float speed = packet.animationNaturalTime() / packet.totalAttackingTime();
+
+        // アニメーション再生、名前空間の設定したアニメーションを起動
             //Jsonから取得するから、アニメーション名とあってないといけない
-            controller.triggerAnimation(
+        controller.removeModifierIf(m -> m instanceof SpeedModifier);
+        controller.addModifier(new SpeedModifier(speed), 0);
+        controller.triggerAnimation(
                     ResourceLocation.fromNamespaceAndPath("overreaction", packet.animationName())
-            );
+        );
     }
 
     @OnlyIn(Dist.CLIENT)

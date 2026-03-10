@@ -151,17 +151,17 @@ public class CombatTickHandler {
                 player, hitbox, e -> e instanceof LivingEntity && e != player
         );
 
-        // デバッグ用：ヒットボックスをパーティクルで可視化
-        if (player.level() instanceof ServerLevel serverLevel) {
-            for (double x = hitbox.minX; x <= hitbox.maxX; x += 0.5) {
-                for (double y = hitbox.minY; y <= hitbox.maxY; y += 0.5) {
-                    for (double z = hitbox.minZ; z <= hitbox.maxZ; z += 0.5) {
-                        serverLevel.sendParticles(ParticleTypes.FLAME,
-                                x, y, z, 1, 0, 0, 0, 0);
-                    }
-                }
-            }
-        }
+        // DEBUG: particle
+//        if (player.level() instanceof ServerLevel serverLevel) {
+//            for (double x = hitbox.minX; x <= hitbox.maxX; x += 0.5) {
+//                for (double y = hitbox.minY; y <= hitbox.maxY; y += 0.5) {
+//                    for (double z = hitbox.minZ; z <= hitbox.maxZ; z += 0.5) {
+//                        serverLevel.sendParticles(ParticleTypes.FLAME,
+//                                x, y, z, 1, 0, 0, 0, 0);
+//                    }
+//                }
+//            }
+//        }
 
         for (Entity target : targets) {
             if (state.hasHit(target.getUUID())) continue;
@@ -176,7 +176,10 @@ public class CombatTickHandler {
             state.setAnimationPlayed(true);
             PlayAnimationPacket packet = new PlayAnimationPacket(
                     player.getId(),
-                    attackDef.animationId
+                    attackDef.animationId,
+                    state.getTotalAttackingTime(),
+                    attackDef.animationNaturalTime
+
             );
             PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, packet);
         }

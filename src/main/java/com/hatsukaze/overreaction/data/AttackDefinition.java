@@ -14,6 +14,7 @@ public class AttackDefinition {
     public final float hitWindowEnd;
     public final boolean playOnHit;
     public final float attackingTimeBase;
+    public final float animationNaturalTime;
 
     // nullable
     public final HitStopDefinition hitStop;
@@ -23,7 +24,7 @@ public class AttackDefinition {
 
 
     private AttackDefinition(String id, String animationId, float damageMultiplier,
-                             float hitWindowStart, float hitWindowEnd, boolean playOnHit, float attackingTimeBase,
+                             float hitWindowStart, float hitWindowEnd, boolean playOnHit, float attackingTimeBase, float animationNaturalTime,
                              HitStopDefinition hitStop, RecoveryDefinition recovery,
                              ChargeDefinition charge) {
         this.id = id;
@@ -33,6 +34,7 @@ public class AttackDefinition {
         this.hitWindowEnd = hitWindowEnd;
         this.playOnHit = playOnHit;
         this.attackingTimeBase = attackingTimeBase;
+        this.animationNaturalTime = animationNaturalTime;
         this.hitStop = hitStop;
         this.recovery = recovery;
         this.charge = charge;
@@ -46,7 +48,9 @@ public class AttackDefinition {
         String id           = json.get("id").getAsString();
         String animationId  = json.get("animationId").getAsString();
         float dmgMult       = json.get("damageMultiplier").getAsFloat();
+        //もしもなかった場合に備えてデフォルト値1.0f
         float atkTimeBase  = json.has("attackingTimeBase") ? json.get("attackingTimeBase").getAsFloat() : 1.0f;
+        float animationNaturalTime = json.has("animationNaturalTime") ? json.get("animationNaturalTime").getAsFloat() : 1.0f;
 
         // hitWindowがnullの場合
         float hwStart = 0f;
@@ -66,6 +70,6 @@ public class AttackDefinition {
                 ? ChargeDefinition.fromJson(json.getAsJsonObject("charge")) : null;
 
         return new AttackDefinition(id, animationId, dmgMult, hwStart, hwEnd,
-                playOnHit , atkTimeBase , hitStop, recovery, charge);
+                playOnHit, atkTimeBase, animationNaturalTime, hitStop, recovery, charge);
     }
 }

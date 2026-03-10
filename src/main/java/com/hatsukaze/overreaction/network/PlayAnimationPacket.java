@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record PlayAnimationPacket(int entityId, String animationName)
+public record PlayAnimationPacket(int entityId, String animationName , float totalAttackingTime , float animationNaturalTime)
         implements CustomPacketPayload {
 
     //PlayAnimationPacketのタイプ（種類？）を名前空間とそのパスで作成、ネットワーク上でどのパケットか識別するために使用
@@ -19,6 +19,8 @@ public record PlayAnimationPacket(int entityId, String animationName)
             StreamCodec.composite(
                     ByteBufCodecs.INT, PlayAnimationPacket::entityId,
                     ByteBufCodecs.STRING_UTF8, PlayAnimationPacket::animationName,
+                    ByteBufCodecs.FLOAT, PlayAnimationPacket::totalAttackingTime,
+                    ByteBufCodecs.FLOAT, PlayAnimationPacket::animationNaturalTime,
                     PlayAnimationPacket::new
             );
 
